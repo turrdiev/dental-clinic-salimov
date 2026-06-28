@@ -1,0 +1,29 @@
+name: Daily Database Backup
+
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install PostgreSQL client
+        run: sudo apt-get install -y postgresql-client
+
+      - name: Create backup
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          FILENAME="backup-$(date +%Y-%m-%d_%H-%M-%S).sql"
+          pg_dump "$DATABASE_URL" -Fc -f "$FILENAME"
+          echo "✅ Backup created: $FILENAME ($(du -sh $FILENAME | cut -f1))"
+
+      - name: Upload as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: db-backup-${{ github.run_number }}-${{ github.run_attempt }}
+          path: "*.sql"
+          retention-days: 30
+          compression-level: 9

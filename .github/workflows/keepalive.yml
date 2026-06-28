@@ -1,0 +1,12 @@
+name: Keep Alive
+on:
+  schedule:
+    - cron: '*/4 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping API
+        run: curl -s https://salimov.asia/api/health
